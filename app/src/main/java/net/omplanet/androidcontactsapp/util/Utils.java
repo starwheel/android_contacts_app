@@ -26,6 +26,7 @@ import java.net.URL;
  * This class contains static utility methods.
  */
 public class Utils {
+    private static final String TAG = "Utils";
 
     // Prevents instantiation.
     private Utils() {}
@@ -51,20 +52,6 @@ public class Utils {
             Toast.makeText(activity, "Sorry, there was a problem and the action is not completed.", Toast.LENGTH_SHORT).show();
         }
         return false;
-    }
-
-    public static URL makePictureUrl(GraphUser user) {
-        URL url = null;
-
-        try {
-            JSONObject jsonPicture = (JSONObject) user.getProperty("picture");//TODO get large picture
-            String urlStr = jsonPicture.getJSONObject("data").getString("url");
-            url = new URL(urlStr);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return url;
     }
 
     /**

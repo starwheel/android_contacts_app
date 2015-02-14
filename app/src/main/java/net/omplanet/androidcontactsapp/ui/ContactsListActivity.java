@@ -114,4 +114,13 @@ public class ContactsListActivity extends FragmentActivity implements
         // search results. Only used pre-HC.
         return !isSearchResultView && super.onSearchRequested();
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // To refresh the fragment to update the picture
+        if (isTwoPaneLayout && mContactDetailFragment != null) {
+            mContactDetailFragment.setContact(mContactUri);
+        }
+    }
 }

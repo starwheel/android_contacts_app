@@ -15,6 +15,8 @@ import com.facebook.widget.PickerFragment;
 
 import net.omplanet.androidcontactsapp.R;
 
+import java.util.Arrays;
+
 /**
  * The PickerActivity enhances the Friend Picker by adding a title
  * and a Done button. The selection results are saved in the MyApplication
@@ -36,6 +38,7 @@ public class PickerActivity extends FragmentActivity {
         if (savedInstanceState == null) {
             friendPickerFragment = new FriendPickerFragment(args);
             friendPickerFragment.setMultiSelect(false);
+            friendPickerFragment.setExtraFields(Arrays.asList("username"));
             friendPickerFragment.setFriendPickerType(FriendPickerFragment.FriendPickerType.TAGGABLE_FRIENDS);
         } else {
             friendPickerFragment = (FriendPickerFragment) manager.findFragmentById(R.id.picker_fragment);

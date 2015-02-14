@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -24,6 +25,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.FacebookRequestError;
 import com.facebook.HttpMethod;
@@ -43,7 +45,7 @@ import com.facebook.widget.FacebookDialog;
 import com.facebook.widget.ProfilePictureView;
 
 import net.omplanet.androidcontactsapp.R;
-import net.omplanet.androidcontactsapp.model.FBUser;
+import net.omplanet.androidcontactsapp.util.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,6 +59,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,15 +84,13 @@ public class SelectionFragment extends Fragment {
     private ProgressDialog progressDialog;
     private List<BaseListElement> listElements;
     private ProfilePictureView myProfilePictureView;
-    private ProfilePictureView selectedProfilePictureView;
+    private ImageView selectedUserPictureView;
     private boolean pendingAnnounce;
     private FacebookLoginActivity activity;
     private Uri photoUri;
-    private ImageView photoThumbnail;
+    private URL profilePictureUrl;
     private Button doneButton;
     private Button cancelButton;
-
-    private FBUser mUser;
 
     private UiLifecycleHelper uiHelper;
     private Session.StatusCallback sessionCallback = new Session.StatusCallback() {
@@ -149,7 +150,6 @@ public class SelectionFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_selection, container, false);
 
         listView = (ListView) view.findViewById(R.id.selection_list);
-        photoThumbnail = (ImageView) view.findViewById(R.id.selected_image);
 
         myProfilePictureView = (ProfilePictureView) view.findViewById(R.id.my_profile_pic);
         myProfilePictureView.setCropped(true);
@@ -161,9 +161,7 @@ public class SelectionFragment extends Fragment {
             }
         });
 
-        selectedProfilePictureView = (ProfilePictureView) view.findViewById(R.id.selection_profile_pic);
-        selectedProfilePictureView.setCropped(true);
-        selectedProfilePictureView.setProfileId(null);
+        selectedUserPictureView = (ImageView) view.findViewById(R.id.selection_profile_pic);
 
         final MyApplication app = ((MyApplication) getActivity().getApplication());
         app.setSelectedUsers(null);
@@ -172,7 +170,24 @@ public class SelectionFragment extends Fragment {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getActivity().finish();
+                // Fetch the data Uri from the intent provided to this activity
+                try {
+                    Bitmap selectedPictureBitmap = null;
+                    Uri contactUri = getActivity().getIntent().getData();
+
+                    if(photoUri != null) selectedPictureBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
+                    else if(profilePictureUrl != null) selectedPictureBitmap = BitmapFactory.decodeStream(profilePictureUrl.openConnection().getInputStream());
+
+                    //Save the selected user picture from FB to Contacts
+                    if (selectedPictureBitmap != null && Utils.setContactPictureByRawContactId(getActivity(), contactUri, selectedPictureBitmap)) {
+                        getActivity().finish();
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //If no selection
+                Toast.makeText(getActivity(), "Please select a contact picture to save", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -193,6 +208,8 @@ public class SelectionFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        uiHelper.onActivityResult(requestCode, resultCode, data);
+
         if (resultCode == Activity.RESULT_OK && requestCode >= 0 && requestCode < listElements.size()) {
             listElements.get(requestCode).onActivityResult(data);
         } else {
@@ -705,9 +722,26 @@ public class SelectionFragment extends Fragment {
         @Override
         protected void onActivityResult(Intent data) {
             MyApplication app = ((MyApplication) getActivity().getApplication());
-
             selectedUsers = app.getSelectedUsers();
-            setUser();
+
+            //TODO replace and set null if no selection
+            Session session = Session.getActiveSession();
+            if (selectedUsers != null && session != null && session.isOpened()) {
+                //TODO: Not possilbe to get large pictures like this:
+                //makeUserRequest(session, selectedUsers.get(0).getId());
+
+                //Get small prrofile pictures from FriendPickerFragment
+                try {
+                    photoUri = null;
+                    profilePictureUrl = extractPictureUrl(selectedUsers.get(0));
+                    Bitmap selectedPictureBitmap = BitmapFactory.decodeStream(profilePictureUrl.openConnection().getInputStream());
+                    selectedUserPictureView.setImageBitmap(selectedPictureBitmap);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            setUserText();
             notifyDataChanged();
         }
 
@@ -730,20 +764,18 @@ public class SelectionFragment extends Fragment {
             byte[] bytes = savedState.getByteArray(FRIENDS_KEY);
             if (bytes != null) {
                 selectedUsers = restoreByteArray(bytes);
-                setUser();
+                setUserText();
                 return true;
             }
             return false;
         }
 
-        private void setUser() {
+        private void setUserText() {
             String text = null;
             if (selectedUsers != null && selectedUsers.size() == 1) {
-                selectedProfilePictureView.setProfileId(selectedUsers.get(0).getId());
                 text = selectedUsers.get(0).getName();
             }
             if (text == null) {
-                selectedProfilePictureView.setProfileId(null);
                 text = getResources().getString(R.string.action_people_default);
             }
             setText2(text);
@@ -880,7 +912,7 @@ public class SelectionFragment extends Fragment {
         }
 
         private void setPhotoThumbnail() {
-            photoThumbnail.setImageURI(photoUri);
+            selectedUserPictureView.setImageURI(photoUri);
         }
 
         private void startCameraActivity() {
@@ -975,33 +1007,56 @@ public class SelectionFragment extends Fragment {
 
     }
 
+    //Does not work because since the OpenGrpaph API 2 the IDs we get are encrypted and have
+    // permission only to tag users. The app will not be able to get other users pictures or any
+    // other objects if the users do not give permission for it:
+    // http://stackoverflow.com/questions/23507885/retrieve-full-list-of-friends-using-facebook-api/23510232#23510232
+    // To get the picture we will need to use the small pictures provided by the FriendPickerFragment at the moment.
     private void makeUserRequest(final Session session, final String userId) {
-        Bundle bundle = new Bundle();
-        bundle.putString("fields", "picture.type(large),email,first_name,last_name,username");
-        final Request request = new Request(session,
-                userId, bundle, HttpMethod.GET, new Request.Callback() {
+        Bundle params = new Bundle();
+        params.putBoolean("redirect", false);
+        params.putString("height", "300");
+        params.putString("type", "normal");
+        params.putString("width", "300");
 
-            @Override
-            public void onCompleted(Response response) {
-                GraphObject graphObject = response.getGraphObject();
-                if (graphObject != null) {
+        /* make the API call */
+        new Request(
+                session,
+                "/" + userId + "/picture",
+                params,
+                HttpMethod.GET,
+                new Request.Callback() {
+                    public void onCompleted(Response response) {
+                        //handle the result
+                        GraphObject graphObject = response.getGraphObject();
+                        if (graphObject != null) {
+                            try {
+                                //Parse graphObject to User
+                                JSONObject jsonPicture = graphObject.getInnerJSONObject();
 
-                    //Parse graphObject to User
-                    JSONObject jsonUser = graphObject.getInnerJSONObject();
-                    try {
-                        mUser = new FBUser();
-                        mUser.setEmail(jsonUser.getString("EMAIL"));
-                        mUser.setImageUri(jsonUser.getJSONObject("picture").getJSONObject("data").getString("url"));
-                        mUser.setName(jsonUser.getString("first_name"));
-                        mUser.setSurname(jsonUser.getString("last_name"));
-                        mUser.setUsername(jsonUser.getString("username"));
-                    } catch (JSONException e) {
-                        Log.e(TAG, e.toString());
-                        e.printStackTrace();
+                                //Load and set profile bitmap
+                                URL url = new URL(jsonPicture.getJSONObject("data").getString("url"));
+                                //TODO consider to improve
+                                Bitmap selectedPictureBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                                selectedUserPictureView.setImageBitmap(selectedPictureBitmap);
+                            } catch (Exception e) {
+                                Log.e(TAG, e.toString());
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }
-            }
-        });
-        Request.executeBatchAsync(request);
+        ).executeAsync();
+    }
+
+    //Get the small picture URL from the GraphUser
+    private URL extractPictureUrl(GraphUser user) throws Exception {
+        URL url = null;
+
+        JSONObject jsonPicture = (JSONObject) user.getProperty("picture");//TODO get large picture
+        String urlStr = jsonPicture.getJSONObject("data").getString("url");
+        url = new URL(urlStr);
+
+        return url;
     }
 }

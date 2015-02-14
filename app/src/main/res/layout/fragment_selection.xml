@@ -56,13 +56,13 @@
 	        android:layout_height="match_parent"
 	        android:orientation="vertical">
 
-            <com.facebook.widget.ProfilePictureView
+            <ImageView
                 android:id="@+id/selection_profile_pic"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
+                android:layout_height="300dp"
+                android:layout_width="300dp"
                 android:layout_margin="10dp"
                 android:gravity="center|center_vertical"
-                facebook:preset_size="large" />
+                android:src="@drawable/mr_unknown"/>
 
 	        <net.omplanet.androidcontactsapp.ui.FullListView
 	            android:id="@+id/selection_list"
@@ -71,15 +71,6 @@
 	            android:layout_margin="20dp"
 	            android:dividerHeight="4dp"
 	            android:divider="#00000000"/>
-	
-	        <ImageView 
-	            android:id="@+id/selected_image"
-	            android:layout_width="match_parent"
-	            android:layout_height="0dp"
-	            android:layout_weight="1"
-	            android:layout_marginLeft="50dp"
-	            android:layout_marginRight="50dp"/>
-
 
 	    </LinearLayout>
     </ScrollView>

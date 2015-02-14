@@ -77,5 +77,13 @@ public class ContactDetailActivity extends FragmentActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // Single pane layout, restart a new ContactDetailActivity with the contact Uri
+        // to reload the contat update
+        Uri uri = getIntent().getData();
+        Intent intent = new Intent(this, ContactDetailActivity.class);
+        intent.setData(uri);
+        startActivity(intent);
+        finish();
     }
 }

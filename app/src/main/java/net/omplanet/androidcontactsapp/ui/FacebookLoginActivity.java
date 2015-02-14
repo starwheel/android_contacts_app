@@ -1,8 +1,6 @@
 package net.omplanet.androidcontactsapp.ui;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,13 +12,8 @@ import com.facebook.AppEventsLogger;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
-import com.facebook.model.GraphUser;
 
 import net.omplanet.androidcontactsapp.R;
-import net.omplanet.androidcontactsapp.util.Utils;
-
-import java.net.URL;
-import java.util.List;
 
 public class FacebookLoginActivity extends FragmentActivity {
     private static final String TAG = "FacebookLoginActivity";
@@ -42,7 +35,6 @@ public class FacebookLoginActivity extends FragmentActivity {
             onSessionStateChange(session, state, exception);
         }
     };
-    private Uri mContactUri;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,9 +47,6 @@ public class FacebookLoginActivity extends FragmentActivity {
         uiHelper.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_facebook_login);
-
-        // Fetch the data Uri from the intent provided to this activity
-        mContactUri = getIntent().getData();
 
         FragmentManager fm = getSupportFragmentManager();
         SplashFragment splashFragment = (SplashFragment) fm.findFragmentById(R.id.splashFragment);
@@ -96,24 +85,6 @@ public class FacebookLoginActivity extends FragmentActivity {
         super.onPause();
         uiHelper.onPause();
         isResumed = false;
-
-        //Load and save the user picture selected from FB
-        //TODO consider refactoring
-        try {
-            MyApplication app = (MyApplication) this.getApplication();
-            List<GraphUser> users = app.getSelectedUsers();
-
-            if (users != null) {
-                URL url = Utils.makePictureUrl(users.get(0));
-                if (url != null) {
-                    Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());;
-                    if (bitmap != null) Utils.setContactPictureByRawContactId(this, mContactUri, bitmap);
-                    app.setSelectedUsers(null);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         // Call the 'deactivateApp' method to log an app event for use in analytics and advertising
         // reporting.  Do so in the onPause methods of the primary Activities that an app may be launched into.

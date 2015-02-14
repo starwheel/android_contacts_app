@@ -58,7 +58,7 @@
     <string name="result_dialog_text_canceled">Post canceled.</string>
     <string name="progress_dialog_text">Announcing, please wait...</string>
     <string name="single_user_selected">%1$s</string>
-    <string name="error_dialog_title">Something Went Wrong</string>
+    <string name="error_dialog_title">Something Went Wrong. Please check your internet connection.</string>
     <string name="error_dialog_button_text">OK</string>
     <string name="error_dialog_default_text">No response from server.</string>
     <string name="no_location_error">Could not obtain your current location</string>
