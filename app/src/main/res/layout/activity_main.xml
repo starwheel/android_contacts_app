@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Main Activity single pane layout. This layout contains a single ContactsListFragment that
+     displays a list of contacts. Tapping on a contact will start a new activity to display the
+     contact details. -->
+
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+          android:name="net.omplanet.androidcontactsapp.ui.ContactsListFragment"
+          android:id="@+id/contact_list"
+          android:layout_height="match_parent"
+          android:layout_width="match_parent"/>

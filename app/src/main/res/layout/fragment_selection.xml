@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:facebook="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+	
+	<RelativeLayout 
+		android:layout_width="match_parent"
+		android:layout_height="60dp"
+		android:background="@android:color/holo_blue_dark">
+
+        <com.facebook.widget.ProfilePictureView
+            android:id="@+id/my_profile_pic"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:gravity="right|center_vertical"
+            android:layout_margin="10dp"
+            facebook:preset_size="small" />
+
+        <Button
+            android:id="@+id/view_done_button"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="right|center_vertical"
+            android:layout_marginRight="10dp"
+            android:text="@string/com_facebook_picker_done_button_text"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent"/>
+
+        <Button
+            android:id="@+id/view_cancel_button"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_toLeftOf="@+id/view_done_button"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:layout_marginRight="10dp"
+            android:text="@string/com_facebook_loginview_cancel_action"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent"/>
+        
+	</RelativeLayout>
+	<ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:background="#FFF">
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:orientation="vertical">
+
+            <com.facebook.widget.ProfilePictureView
+                android:id="@+id/selection_profile_pic"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_margin="10dp"
+                android:gravity="center|center_vertical"
+                facebook:preset_size="large" />
+
+	        <net.omplanet.androidcontactsapp.ui.FullListView
+	            android:id="@+id/selection_list"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_margin="20dp"
+	            android:dividerHeight="4dp"
+	            android:divider="#00000000"/>
+	
+	        <ImageView 
+	            android:id="@+id/selected_image"
+	            android:layout_width="match_parent"
+	            android:layout_height="0dp"
+	            android:layout_weight="1"
+	            android:layout_marginLeft="50dp"
+	            android:layout_marginRight="50dp"/>
+
+
+	    </LinearLayout>
+    </ScrollView>
+</LinearLayout>
+
+
