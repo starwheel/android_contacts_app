@@ -97,6 +97,24 @@ public class FacebookLoginActivity extends FragmentActivity {
         uiHelper.onPause();
         isResumed = false;
 
+        //Load and save the user picture selected from FB
+        //TODO consider refactoring
+        try {
+            MyApplication app = (MyApplication) this.getApplication();
+            List<GraphUser> users = app.getSelectedUsers();
+
+            if (users != null) {
+                URL url = Utils.makePictureUrl(users.get(0));
+                if (url != null) {
+                    Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());;
+                    if (bitmap != null) Utils.setContactPictureByRawContactId(this, mContactUri, bitmap);
+                    app.setSelectedUsers(null);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Call the 'deactivateApp' method to log an app event for use in analytics and advertising
         // reporting.  Do so in the onPause methods of the primary Activities that an app may be launched into.
         AppEventsLogger.deactivateApp(this);
@@ -106,22 +124,6 @@ public class FacebookLoginActivity extends FragmentActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         uiHelper.onActivityResult(requestCode, resultCode, data);
-
-        //Load and save the user picture selected from FB
-        try {
-            MyApplication app = (MyApplication) this.getApplication();
-
-            List<GraphUser> users = app.getSelectedUsers();
-            if (users != null) {
-                URL url = Utils.makePictureUrl(users.get(0));
-                if (url != null) {
-                    Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());;
-                    if (bitmap != null) Utils.setContactPictureByRawContactId(this, mContactUri, bitmap);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
