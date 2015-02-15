@@ -170,8 +170,8 @@ public class ContactDetailFragment extends Fragment implements
             // items that are visible.
             mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
-            mSocialNetworksLayout.removeAllViews();
             mPhoneNumbersLayout.removeAllViews();
+            mSocialNetworksLayout.removeAllViews();
             mAddressesLayout.removeAllViews();
             if (mContactName != null) {
                 mContactName.setText("");

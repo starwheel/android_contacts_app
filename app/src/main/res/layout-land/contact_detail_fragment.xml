@@ -38,6 +38,14 @@
                           android:textAppearance="@style/contactNameTitle"/>
 
                 <LinearLayout
+                    android:id="@+id/social_networks_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/padding"
+                    android:orientation="vertical">
+                </LinearLayout>
+
+                <LinearLayout
                         android:id="@+id/contact_details_layout1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
